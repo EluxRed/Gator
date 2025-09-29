@@ -1,0 +1,34 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go build/cache
+/bin/
+/build/
+/dist/
+/coverage.out
+*.coverprofile
+*.pprof
+profile*.cpu
+trace.out
+
+# Go modules (keep go.mod and go.sum)
+vendor/
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Logs and env
+*.log
+.env
+.env.*
+.tmp/
