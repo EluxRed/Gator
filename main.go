@@ -1,14 +1,19 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/EluxRed/Gator/internal/config"
+	"github.com/EluxRed/Gator/internal/database"
+
+	_ "github.com/lib/pq" //The underscore tells Go that you're importing it for its side effects, not because you need to use it.
 )
 
 type state struct {
+	dbPtr     *database.Queries
 	configPtr *config.Config
 }
 
@@ -18,18 +23,36 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	current_state := &state{configPtr: &cfg}
+	db, err := sql.Open("postgres", cfg.DB_URL)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dbQueries := database.New(db)
+
+	current_state := &state{dbPtr: dbQueries, configPtr: &cfg}
 
 	cmds := commands{registeredCommands: make(map[string]func(*state, command) error)}
 
 	if len(os.Args) < 2 {
 		log.Fatalln(fmt.Errorf("command name missing"))
 	}
-	cmd_login := command{Name: os.Args[1], Args: os.Args[2:]}
+	cmd := command{Name: os.Args[1], Args: os.Args[2:]}
 
-	cmds.register("login", handlerLogin)
+	switch cmd.Name {
+	case "login":
+		cmds.register(cmd.Name, handlerLogin)
+	case "register":
+		cmds.register(cmd.Name, handlerRegister)
+	case "reset":
+		cmds.register(cmd.Name, handlerReset)
+	case "users":
+		cmds.register(cmd.Name, handlerUsers)
+	default:
+		log.Fatalln(fmt.Errorf("wrong command"))
+	}
 
-	if err := cmds.run(current_state, cmd_login); err != nil {
+	if err := cmds.run(current_state, cmd); err != nil {
 		log.Fatalln(err)
 	}
 }
