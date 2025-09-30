@@ -48,6 +48,12 @@ func main() {
 		cmds.register(cmd.Name, handlerReset)
 	case "users":
 		cmds.register(cmd.Name, handlerUsers)
+	case "agg":
+		cmds.register(cmd.Name, handlerAgg)
+	case "addfeed":
+		cmds.register(cmd.Name, handlerAddFeed)
+	case "feeds":
+		cmds.register(cmd.Name, handlerFeeds)
 	default:
 		log.Fatalln(fmt.Errorf("wrong command"))
 	}
