@@ -6,8 +6,8 @@ import (
 )
 
 func handlerAgg(s *state, cmd command) error {
-	if len(cmd.Args) > 0 {
-		return fmt.Errorf("parameters passed: %v\nparameters expected: %v", len(cmd.Args), 0)
+	if err := checkParams(cmd.Args, 0); err != nil {
+		return err
 	}
 	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
 	if err != nil {

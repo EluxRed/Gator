@@ -12,13 +12,11 @@ import (
 )
 
 func handlerLogin(s *state, cmd command) error {
-	if len(cmd.Args) == 0 {
-		return fmt.Errorf("username is required")
+	if err := checkParams(cmd.Args, 1); err != nil {
+		return err
 	}
-	if len(cmd.Args) > 1 {
-		return fmt.Errorf("parameters passed: %v\nexpected: %v", len(cmd.Args), 1)
-	}
-	_, err := s.dbPtr.GetUser(context.Background(), cmd.Args[0])
+	name := cmd.Args[0]
+	_, err := s.dbPtr.GetUser(context.Background(), name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("user does not exist: %w", err)
@@ -26,19 +24,16 @@ func handlerLogin(s *state, cmd command) error {
 			return err
 		}
 	}
-	if err := s.configPtr.SetUser(cmd.Args[0]); err != nil {
+	if err := s.configPtr.SetUser(name); err != nil {
 		return fmt.Errorf("couldn't set current user: %w", err)
 	}
-	fmt.Println("user set to:", cmd.Args[0])
+	fmt.Println("user set to:", name)
 	return nil
 }
 
 func handlerRegister(s *state, cmd command) error {
-	if len(cmd.Args) == 0 {
-		return fmt.Errorf("username is required")
-	}
-	if len(cmd.Args) > 1 {
-		return fmt.Errorf("parameters passed: %v\nparameters expected: %v", len(cmd.Args), 1)
+	if err := checkParams(cmd.Args, 1); err != nil {
+		return err
 	}
 	usr := database.CreateUserParams{ID: uuid.New(), CreatedAt: time.Now(), UpdatedAt: time.Now(), Name: cmd.Args[0]}
 	_, err := s.dbPtr.GetUser(context.Background(), usr.Name)
@@ -60,8 +55,8 @@ func handlerRegister(s *state, cmd command) error {
 }
 
 func handlerUsers(s *state, cmd command) error {
-	if len(cmd.Args) > 0 {
-		return fmt.Errorf("parameters passed: %v\nparameters expected: %v", len(cmd.Args), 0)
+	if err := checkParams(cmd.Args, 0); err != nil {
+		return err
 	}
 	users, err := s.dbPtr.GetUsers(context.Background())
 	if err != nil {

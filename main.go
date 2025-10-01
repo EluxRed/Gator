@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -51,9 +52,15 @@ func main() {
 	case "agg":
 		cmds.register(cmd.Name, handlerAgg)
 	case "addfeed":
-		cmds.register(cmd.Name, handlerAddFeed)
+		cmds.register(cmd.Name, middlewareLoggedIn(handlerAddFeed))
 	case "feeds":
 		cmds.register(cmd.Name, handlerFeeds)
+	case "follow":
+		cmds.register(cmd.Name, middlewareLoggedIn(handlerFollow))
+	case "following":
+		cmds.register(cmd.Name, middlewareLoggedIn(handlerFollowing))
+	case "unfollow":
+		cmds.register(cmd.Name, middlewareLoggedIn(handlerUnfollow))
 	default:
 		log.Fatalln(fmt.Errorf("wrong command"))
 	}
@@ -61,4 +68,21 @@ func main() {
 	if err := cmds.run(current_state, cmd); err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) error) func(*state, command) error {
+	return func(s *state, cmd command) error {
+		currentUsr, err := s.dbPtr.GetUser(context.Background(), s.configPtr.Current_User_Name)
+		if err != nil {
+			return err
+		}
+		return handler(s, cmd, currentUsr)
+	}
+}
+
+func checkParams(args []string, num int) error {
+	if len(args) != num {
+		return fmt.Errorf("parameters passed: %v\nparameters expected: %v", len(args), num)
+	}
+	return nil
 }

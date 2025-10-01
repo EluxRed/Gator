@@ -9,16 +9,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
-	if len(cmd.Args) != 2 {
-		return fmt.Errorf("parameters passed: %v\nparameters expected: %v - Name of the feed and URL", len(cmd.Args), 2)
+func handlerAddFeed(s *state, cmd command, currentUsr database.User) error {
+	if err := checkParams(cmd.Args, 2); err != nil {
+		return fmt.Errorf("%w\nthe expected parameters are FeedName and URL", err)
 	}
 	feedName := cmd.Args[0]
 	feedURL := cmd.Args[1]
-	currentUsr, err := s.dbPtr.GetUser(context.Background(), s.configPtr.Current_User_Name)
-	if err != nil {
-		return err
-	}
 	newFeed := database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
@@ -31,14 +27,26 @@ func handlerAddFeed(s *state, cmd command) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Feed created successfully:")
+	feedFollow := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    currentUsr.ID,
+		FeedID:    feed.ID,
+	}
+	row, err := s.dbPtr.CreateFeedFollow(context.Background(), feedFollow)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Feed created and followed successfully:")
 	printFeed(feed)
+	fmt.Printf("* UserName:      %s\n", row.UserName)
 	return nil
 }
 
 func handlerFeeds(s *state, cmd command) error {
-	if len(cmd.Args) > 0 {
-		return fmt.Errorf("parameters passed: %v\nparameters expected: %v", len(cmd.Args), 0)
+	if err := checkParams(cmd.Args, 0); err != nil {
+		return err
 	}
 	feeds, err := s.dbPtr.GetFeeds(context.Background())
 	if err != nil {
