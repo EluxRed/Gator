@@ -18,4 +18,5 @@ DELETE FROM users;
 
 -- name: GetUsers :many
 SELECT name
-FROM users;
+FROM users
+ORDER BY name ASC;

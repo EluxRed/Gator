@@ -14,9 +14,22 @@ RETURNING *;
 SELECT feeds.name AS feed_name, feeds.url AS feed_url, users.name AS user_name
 FROM feeds
 INNER JOIN users
-ON feeds.user_id = users.id;
+ON feeds.user_id = users.id
+ORDER BY feeds.updated_at DESC;
 
 -- name: GetFeedFromURL :one
 SELECT *
 FROM feeds
 WHERE url = $1;
+
+-- name: MarkFeedFetched :exec
+UPDATE feeds
+SET last_fetched_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1;
+
+-- name: GetNextFeedToFetch :one
+SELECT *
+FROM feeds
+ORDER BY last_fetched_at ASC NULLS FIRST, created_at ASC
+LIMIT 1;

@@ -61,6 +61,8 @@ func main() {
 		cmds.register(cmd.Name, middlewareLoggedIn(handlerFollowing))
 	case "unfollow":
 		cmds.register(cmd.Name, middlewareLoggedIn(handlerUnfollow))
+	case "browse":
+		cmds.register(cmd.Name, middlewareLoggedIn(handlerBrowse))
 	default:
 		log.Fatalln(fmt.Errorf("wrong command"))
 	}

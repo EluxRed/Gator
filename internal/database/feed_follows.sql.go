@@ -102,6 +102,7 @@ ON feeds.id = feed_follows.feed_id
 INNER JOIN users
 ON users.id = feed_follows.user_id
 WHERE users.name = $1
+ORDER BY feeds.name ASC
 `
 
 type GetFeedFollowsForUserRow struct {
