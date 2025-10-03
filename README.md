@@ -40,11 +40,7 @@ createdb gator
 goose -dir sql/schema postgres "postgres://USER:PASS@localhost:5432/gator?sslmode=disable" up
 ```
 
-5. Run the up-migrations with goose, using your Postgres credentials:
-```bash
-goose -dir sql/schema postgres "postgres://USER:PASS@localhost:5432/gator" up
-```
-6. At this point you don't need the repo anymore and you can run the binary with "gator" followed by a command and possibly parameters (if needed).
+5. At this point you don't need the repo anymore and you can run the binary with "gator" followed by a command and possibly parameters (if needed).
 List of commands:
 - **login**: it expects one parameter, the username. It logins with the provided username as current user, but only if the user already exists in the database, saving it in the config file. All other commands will be executed with this user's username. Example:
 ```bash
